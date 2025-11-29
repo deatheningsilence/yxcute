@@ -36,33 +36,6 @@ SUBREDDITS = [
 ]
 
 MAX_POSTS_PER_SUB = 50
-# ----------------------------------------
-
-#!/usr/bin/env python3
-"""
-Cute Reddit Browser Bot for Telegram
-Requirements:
-    pip install python-telegram-bot aiohttp
-"""
-import asyncio
-import random
-import logging
-from datetime import datetime
-import aiohttp
-
-from telegram import (
-    Update,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    InputMediaPhoto
-)
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    CallbackQueryHandler,
-    ContextTypes
-)
-
 
 
 logging.basicConfig(level=logging.INFO)
@@ -214,7 +187,7 @@ async def periodic_reddit_update():
         await asyncio.sleep(60 * 15)
 
 
-async def shutdown(app, periodic_task):
+async def shutdown(periodic_task):
     """Handle graceful shutdown."""
     logger.info("Shutting down the bot gracefully...")
     periodic_task.cancel()  # Cancel the background task
@@ -222,23 +195,25 @@ async def shutdown(app, periodic_task):
         await periodic_task
     except asyncio.CancelledError:
         pass  # Ignore the cancellation exception
-    await app.stop()  # Stop the app
 
 
 async def main():
+    # Create the bot app
     app = ApplicationBuilder().token(TOKEN).build()
 
+    # Add command and callback handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
 
     # Create the periodic update task
     periodic_task = asyncio.create_task(periodic_reddit_update())
 
-    # Graceful shutdown when the bot is stopped
-    app.job_queue.run_once(shutdown, 0, context=(app, periodic_task))
-
-    logger.info("Bot running...")
-    await app.run_polling()
+    # Run the bot and ensure graceful shutdown
+    try:
+        logger.info("Bot is running...")
+        await app.run_polling()
+    finally:
+        await shutdown(periodic_task)  # Ensure that the background task is canceled when the bot stops
 
 
 if __name__ == "__main__":
