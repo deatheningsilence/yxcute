@@ -187,6 +187,7 @@ async def periodic_reddit_update():
 
 
 async def main():
+    # Create the bot app
     app = ApplicationBuilder().token(TOKEN).build()
 
     # Add command and callback handlers
@@ -196,22 +197,21 @@ async def main():
     # Create the periodic update task
     periodic_task = asyncio.create_task(periodic_reddit_update())
 
-    # Run the bot and handle shutdown properly
+    # Run the bot and ensure graceful shutdown
+    logger.info("Bot is running...")
     try:
-        logger.info("Bot is running...")
-        await app.run_polling()
+        await app.run_polling()  # This will keep the bot running
+    except KeyboardInterrupt:
+        logger.info("Bot interrupted by user.")
     finally:
-        # Ensure cleanup happens, and cancel the background task
-        logger.info("Shutting down the bot gracefully...")
-        periodic_task.cancel()  # Cancel the background task
+        # Ensure cleanup happens and cancel the background task
+        periodic_task.cancel()
         try:
             await periodic_task
         except asyncio.CancelledError:
             pass  # Ignore the cancellation exception
 
-        await app.stop()  # Stop the app and gracefully shut down
-
 
 if __name__ == "__main__":
     # Run the bot using asyncio event loop management
-    asyncio.run(main())
+    asyncio.run(main())  # Starts the bot using asyncio.run directly
