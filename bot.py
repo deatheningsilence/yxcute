@@ -9,6 +9,7 @@ import random
 import logging
 from datetime import datetime
 import aiohttp
+import os
 
 from telegram import (
     Update,
@@ -24,8 +25,6 @@ from telegram.ext import (
 )
 
 # ---------------- CONFIG ----------------
-import os
-
 TOKEN = os.environ.get("BOT_TOKEN")
 
 SUBREDDITS = [
@@ -187,18 +186,7 @@ async def periodic_reddit_update():
         await asyncio.sleep(60 * 15)
 
 
-async def shutdown(periodic_task):
-    """Handle graceful shutdown."""
-    logger.info("Shutting down the bot gracefully...")
-    periodic_task.cancel()  # Cancel the background task
-    try:
-        await periodic_task
-    except asyncio.CancelledError:
-        pass  # Ignore the cancellation exception
-
-
 async def main():
-    # Create the bot app
     app = ApplicationBuilder().token(TOKEN).build()
 
     # Add command and callback handlers
@@ -208,13 +196,22 @@ async def main():
     # Create the periodic update task
     periodic_task = asyncio.create_task(periodic_reddit_update())
 
-    # Run the bot and ensure graceful shutdown
+    # Run the bot and handle shutdown properly
     try:
         logger.info("Bot is running...")
         await app.run_polling()
     finally:
-        await shutdown(periodic_task)  # Ensure that the background task is canceled when the bot stops
+        # Ensure cleanup happens, and cancel the background task
+        logger.info("Shutting down the bot gracefully...")
+        periodic_task.cancel()  # Cancel the background task
+        try:
+            await periodic_task
+        except asyncio.CancelledError:
+            pass  # Ignore the cancellation exception
+
+        await app.stop()  # Stop the app and gracefully shut down
 
 
 if __name__ == "__main__":
+    # Run the bot using asyncio event loop management
     asyncio.run(main())
