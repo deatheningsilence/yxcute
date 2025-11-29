@@ -32,7 +32,7 @@ SUBREDDITS = [
     "aww","cuteanimals","cats","dogs","puppies","kittens","babyanimals","rarepuppers",
     "animalsbeingderps","AnimalsBeingBros","AnimalPhotography","corgi","hedgehog","tuckedinkitties",
     "rabbits","guineapigs","otters","babybeasts","foxes","cute","smallanimals","squirrels","hamsters",
-    "chickens","parrots","ferrets","wildlife","bunnies","seal","penguins"
+    "chickens","parrots","ferrets","wildlife","bunnies","seals","penguins"
 ]
 
 MAX_POSTS_PER_SUB = 50
