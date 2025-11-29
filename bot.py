@@ -24,7 +24,9 @@ from telegram.ext import (
 )
 
 # ---------------- CONFIG ----------------
-TOKEN = "7767411587:AAF1CmBgbYMMjbLbNoXxte8S8sbdJXqGBwc"
+import os
+
+TOKEN = os.environ.get("BOT_TOKEN")
 
 SUBREDDITS = [
     "aww","cuteanimals","cats","dogs","puppies","kittens","babyanimals","rarepuppers",
